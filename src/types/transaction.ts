@@ -12,4 +12,9 @@ export const transactionSchema = z.object({
   date: z.string(),
 });
 
+export const transactionResponseSchema = transactionSchema.extend({
+  id: z.string(),
+});
+
 export type TransactionRequest = z.infer<typeof transactionSchema>;
+export type TransactionResponse = z.infer<typeof transactionResponseSchema>;

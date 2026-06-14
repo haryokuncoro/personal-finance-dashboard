@@ -1,11 +1,9 @@
-import {
-    auth,
-} from "@/auth";
+import { auth } from "@/auth";
 
-import {
-    redirect,
-} from "next/navigation";
-import LogoutButton from "@/components/logout-button";
+import { redirect } from "next/navigation";
+
+import DashboardContent from "@/components/dashboard-content";
+
 export default async function DashboardPage() {
     const session =
         await auth();
@@ -19,19 +17,19 @@ export default async function DashboardPage() {
     }
 
     return (
-
-        <div className="p-10">
-            <h1 className="text-3xl font-bold">
-                Dashboard
+        <div className="max-w-5xl mx-auto p-10">
+            <h1 className="text-3xl font-bold mb-6">
+                Personal Finance Dashboard
             </h1>
-            <LogoutButton />
 
-            <p>
+            <p className="mb-6">
                 Welcome{" "}
                 {
                     session.user?.name
                 }
             </p>
+
+            <DashboardContent />
         </div>
     );
 }

@@ -30,18 +30,19 @@ export default function TransactionForm() {
         });
 
     async function handleSubmit(
-        e: React.FormEvent<HTMLFormElement>
+        e: React.SyntheticEvent<HTMLFormElement>
     ) {
         e.preventDefault();
 
-        const form = e.currentTarget; 
+        const form = e.currentTarget;
         const formData = new FormData(form);
+        const today = new Date().toISOString().split("T")[0];
         const parsed = transactionSchema.parse({
             description: formData.get("description"),
             category: formData.get("category"),
             amount: Number(formData.get("amount")),
             type: formData.get("type"),
-            date: formData.get("date"),
+            date: formData.get("date") || today,
         });
 
 
@@ -59,18 +60,21 @@ export default function TransactionForm() {
         >
             <input
                 name="description"
+                required
                 placeholder="Description"
                 className="border p-2 w-full"
             />
 
             <input
                 name="category"
+                required
                 placeholder="Category"
                 className="border p-2 w-full"
             />
 
             <input
                 type="number"
+                required
                 name="amount"
                 placeholder="Amount"
                 className="border p-2 w-full"
@@ -95,7 +99,7 @@ export default function TransactionForm() {
                 className="border p-2 w-full"
             />
 
-            <button className="bg-black text-white px-4 py-2 rounded">
+            <button type="submit" className="bg-black text-white px-4 py-2 rounded">
                 Add Transaction
             </button>
         </form>

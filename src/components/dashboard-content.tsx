@@ -34,7 +34,7 @@ export function DashboardContent() {
             </div>
 
             <TransactionForm />
-
+            <div className="h-8" />
             <TransactionTable />
         </>
     );

@@ -28,13 +28,12 @@ export default function TransactionTable() {
                 deleteTransaction,
 
             onSuccess: () => {
-                queryClient.invalidateQueries(
-                    {
-                        queryKey: [
-                            "transactions",
-                        ],
-                    }
-                );
+                queryClient.invalidateQueries({
+                    queryKey: ["transactions"],
+                });
+                queryClient.invalidateQueries({
+                    queryKey: ["dashboard-stats"],
+                });
             },
         });
 

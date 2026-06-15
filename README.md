@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Personal Finance Dashboard
 
-## Getting Started
+A Next.js personal finance dashboard for tracking income, expenses, and transaction history with secure email/password authentication.
 
-First, run the development server:
+## Features
+
+- User registration and login using `next-auth` credentials provider
+- PostgreSQL database with Prisma ORM
+- Transaction CRUD via authenticated API routes
+- Dashboard stats with income, expense, and balance calculations
+- Responsive UI powered by Tailwind CSS and React
+
+## Tech stack
+
+- Next.js 16.2
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Prisma 7
+- PostgreSQL
+- NextAuth.js
+- React Hook Form
+- Recharts
+- Zod
+
+## Getting started
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure environment variables
+
+Create a `.env` file at the project root with the following variables:
+
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/your_database
+AUTH_SECRET=your-auth-secret
+```
+
+### 3. Generate Prisma client and run migrations
+
+```bash
+npx prisma generate
+npx prisma migrate dev --name init
+```
+
+### 4. Run the app
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev` - start development server
+- `npm run build` - generate Prisma client and build the app
+- `npm run start` - run the production server
+- `npm run lint` - run ESLint
 
-## Learn More
+## Project structure
 
-To learn more about Next.js, take a look at the following resources:
+- `src/app` - Next.js app routes and pages
+- `src/app/api` - server-side API routes for auth, transactions, and dashboard stats
+- `src/components` - UI components like navbar, transaction form, and table
+- `src/services` - client-side services for auth and transaction API calls
+- `src/lib/prisma.ts` - Prisma client configuration
+- `prisma/schema.prisma` - database schema and models
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Database schema
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Models included:
 
-## Deploy on Vercel
+- `User` with `id`, `name`, `email`, `passwordHash`, and transaction relation
+- `Transaction` with `amount`, `description`, `type`, `category`, `date`, and `userId`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Transaction types:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `INCOME`
+- `EXPENSE`
+
+## Authentication
+
+This app uses credential-based authentication via `next-auth`.
+
+- Users register through `/register`
+- Users login through `/login`
+- Session state is managed with JSON Web Tokens
+
+## API routes
+
+- `POST /api/auth/register` - create a new user
+- `POST /api/auth/[...nextauth]` - login with credentials
+- `GET /api/transactions` - fetch authenticated user's transactions
+- `POST /api/transactions` - create a new transaction
+- `DELETE /api/transactions/[id]` - delete a transaction
+- `GET /api/dashboard/stats` - fetch income, expense, and balance stats
+
+## Notes
+
+- Ensure `DATABASE_URL` points to a running PostgreSQL instance.
+- `AUTH_SECRET` should be a strong secret in production.
+- The app is private by default and optimized for local development.
+
+## License
+
+This project is private.

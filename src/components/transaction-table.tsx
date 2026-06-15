@@ -5,9 +5,7 @@ import {
     useQueryClient,
 } from "@tanstack/react-query";
 
-import {
-    useTransactions,
-} from "@/hooks/use-transactions";
+import { useTransactions } from "@/hooks/use-transactions";
 
 import {
     deleteTransaction,
@@ -49,7 +47,7 @@ export default function TransactionTable() {
     }
 
     return (
-        <table className="w-full border">
+        <table className="w-full border-collapse border border-gray-300 text-sm">
             <thead>
                 <tr>
                     <th>
@@ -106,6 +104,7 @@ export default function TransactionTable() {
 
                             <td>
                                 <button
+                                    className="bg-red-500 text-white px-4 py-2 rounded"
                                     onClick={() =>
                                         mutation.mutate(
                                             tx.id

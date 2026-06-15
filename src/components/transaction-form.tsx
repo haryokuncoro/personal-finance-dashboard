@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
     createTransaction,
     updateTransaction,
@@ -12,22 +14,19 @@ import {
     type TransactionResponse,
 } from "@/types/transaction";
 
-type FieldErrors = Partial<Record<string, string>>;
-
 type TransactionFormProps = {
     selectedTransaction?: TransactionResponse;
     onClear?: () => void;
 };
 
-const defaultFormState = () => {
+const defaultFormState = (): TransactionRequest => {
     const today = new Date().toISOString().split("T")[0];
 
     return {
-        id: "",
         description: "",
         category: "",
-        amount: "",
-        type: "EXPENSE" as const,
+        amount: 0,
+        type: "EXPENSE",
         date: today,
     };
 };
@@ -37,38 +36,38 @@ export default function TransactionForm({
     onClear,
 }: TransactionFormProps) {
     const queryClient = useQueryClient();
-    const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-    const [formState, setFormState] = useState(defaultFormState);
+
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors },
+    } = useForm<TransactionRequest>({
+        resolver: zodResolver(transactionSchema),
+        defaultValues: defaultFormState(),
+    });
 
     useEffect(() => {
         if (selectedTransaction) {
-            setFormState({
-                id: selectedTransaction.id,
+            reset({
                 description: selectedTransaction.description,
                 category: selectedTransaction.category,
-                amount: selectedTransaction.amount.toString(),
+                amount: selectedTransaction.amount,
                 type: selectedTransaction.type,
                 date: selectedTransaction.date.split("T")[0],
             });
             return;
         }
 
-        setFieldErrors({});
-        setFormState(defaultFormState());
-    }, [selectedTransaction]);
+        reset(defaultFormState());
+    }, [selectedTransaction, reset]);
 
-    const isEditing = Boolean(formState.id);
+    const isEditing = Boolean(selectedTransaction?.id);
 
     const mutation = useMutation({
-        mutationFn: async ({
-            payload,
-            id,
-        }: {
-            payload: TransactionRequest;
-            id?: string;
-        }) => {
-            if (id) {
-                return updateTransaction(id, payload);
+        mutationFn: async (payload: TransactionRequest) => {
+            if (selectedTransaction?.id) {
+                return updateTransaction(selectedTransaction.id, payload);
             }
 
             return createTransaction(payload);
@@ -76,46 +75,21 @@ export default function TransactionForm({
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
             queryClient.invalidateQueries({ queryKey: ["transactions"] });
-            setFormState(defaultFormState());
-            setFieldErrors({});
+            reset(defaultFormState());
             onClear?.();
         },
     });
 
-    async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-        setFieldErrors({});
-
-        const result = transactionSchema.safeParse({
-            description: formState.description,
-            category: formState.category,
-            amount: Number(formState.amount),
-            type: formState.type,
-            date: formState.date,
-        });
-
-        if (!result.success) {
-            const flat = result.error.flatten().fieldErrors;
-            setFieldErrors(
-                Object.fromEntries(
-                    Object.entries(flat).map(([k, v]) => [k, v?.[0]])
-                )
-            );
-            return;
-        }
-
+    const onSubmit: SubmitHandler<TransactionRequest> = async (payload) => {
         try {
-            await mutation.mutateAsync({
-                payload: result.data,
-                id: formState.id || undefined,
-            });
+            await mutation.mutateAsync(payload);
         } catch {
-            // mutation-level error (network, server, etc.) is on mutation.error
+            // mutation error is surfaced via mutation.error
         }
-    }
+    };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-2 border p-4 rounded">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-2 border p-4 rounded">
             <div className="flex items-center justify-between gap-4">
                 <h2 className="text-lg font-semibold">
                     {isEditing ? "Edit Transaction" : "Add Transaction"}
@@ -124,8 +98,7 @@ export default function TransactionForm({
                     <button
                         type="button"
                         onClick={() => {
-                            setFormState(defaultFormState());
-                            setFieldErrors({});
+                            reset(defaultFormState());
                             onClear?.();
                         }}
                         className="text-sm text-blue-600"
@@ -137,94 +110,56 @@ export default function TransactionForm({
 
             <div>
                 <input
-                    name="description"
                     placeholder="Description"
-                    value={formState.description}
-                    onChange={(event) =>
-                        setFormState((prev) => ({
-                            ...prev,
-                            description: event.target.value,
-                        }))
-                    }
                     className="border p-2 w-full"
+                    {...register("description")}
                 />
-                {fieldErrors.description && (
-                    <p className="text-red-500 text-sm">{fieldErrors.description}</p>
+                {errors.description && (
+                    <p className="text-red-500 text-sm">{errors.description.message}</p>
                 )}
             </div>
 
             <div>
                 <input
-                    name="category"
                     placeholder="Category"
-                    value={formState.category}
-                    onChange={(event) =>
-                        setFormState((prev) => ({
-                            ...prev,
-                            category: event.target.value,
-                        }))
-                    }
                     className="border p-2 w-full"
+                    {...register("category")}
                 />
-                {fieldErrors.category && (
-                    <p className="text-red-500 text-sm">{fieldErrors.category}</p>
+                {errors.category && (
+                    <p className="text-red-500 text-sm">{errors.category.message}</p>
                 )}
             </div>
 
             <div>
                 <input
                     type="number"
-                    name="amount"
                     placeholder="Amount"
-                    value={formState.amount}
-                    onChange={(event) =>
-                        setFormState((prev) => ({
-                            ...prev,
-                            amount: event.target.value,
-                        }))
-                    }
                     className="border p-2 w-full"
+                    {...register("amount", { valueAsNumber: true })}
                 />
-                {fieldErrors.amount && (
-                    <p className="text-red-500 text-sm">{fieldErrors.amount}</p>
+                {errors.amount && (
+                    <p className="text-red-500 text-sm">{errors.amount.message}</p>
                 )}
             </div>
 
             <div>
-                <select
-                    name="type"
-                    value={formState.type}
-                    onChange={(event) =>
-                        setFormState((prev) => ({
-                            ...prev,
-                            type: event.target.value as "INCOME" | "EXPENSE",
-                        }))
-                    }
-                    className="border p-2 w-full"
-                >
+                <select className="border p-2 w-full" {...register("type")}>
                     <option value="EXPENSE">Expense</option>
                     <option value="INCOME">Income</option>
                 </select>
-                {fieldErrors.type && (
-                    <p className="text-red-500 text-sm">{fieldErrors.type}</p>
+                {errors.type && (
+                    <p className="text-red-500 text-sm">{errors.type.message}</p>
                 )}
             </div>
 
             <div>
                 <input
                     type="date"
-                    name="date"
-                    value={formState.date}
-                    onChange={(event) =>
-                        setFormState((prev) => ({
-                            ...prev,
-                            date: event.target.value,
-                        }))
-                    }
                     className="border p-2 w-full"
+                    {...register("date")}
                 />
-                {fieldErrors.date && (
-                    <p className="text-red-500 text-sm">{fieldErrors.date}</p>
+                {errors.date && (
+                    <p className="text-red-500 text-sm">{errors.date.message}</p>
                 )}
             </div>
 

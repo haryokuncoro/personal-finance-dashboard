@@ -22,6 +22,19 @@ export async function createTransaction(payload: TransactionRequest): Promise<un
   return response.json();
 }
 
+export const updateTransaction = async (id:string, payload: TransactionRequest): Promise<unknown> => {
+  const response = await fetch(`/api/transactions/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) throw new Error("Failed");
+
+  return response.json();
+}
+
+
 export async function deleteTransaction(id: string) {
   const response = await fetch(`/api/transactions/${id}`, {
     method: "DELETE",
@@ -31,3 +44,4 @@ export async function deleteTransaction(id: string) {
     throw new Error("Failed");
   }
 }
+

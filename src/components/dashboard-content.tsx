@@ -1,13 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import TransactionForm from "./transaction-form";
 
 import TransactionTable from "./transaction-table";
 
 import { SummaryCard } from "./summary-card";
 import { useDashboardStats } from "@/hooks/use-dashboard-stats";
+import type { TransactionResponse } from "@/types/transaction";
 
 export function DashboardContent() {
+    const [selectedTransaction, setSelectedTransaction] = useState<TransactionResponse | null>(null);
     const { data, isLoading } = useDashboardStats();
 
     if (isLoading) {
@@ -33,9 +36,12 @@ export function DashboardContent() {
                 />
             </div>
 
-            <TransactionForm />
+            <TransactionForm
+                selectedTransaction={selectedTransaction ?? undefined}
+                onClear={() => setSelectedTransaction(null)}
+            />
             <div className="h-8" />
-            <TransactionTable />
+            <TransactionTable onEdit={setSelectedTransaction} />
         </>
     );
 }

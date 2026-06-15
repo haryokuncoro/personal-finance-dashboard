@@ -12,7 +12,11 @@ import {
 } from "@/services/transaction.service";
 import { TransactionResponse } from "@/types/transaction";
 
-export default function TransactionTable() {
+type TransactionTableProps = {
+    onEdit?: (transaction: TransactionResponse) => void;
+};
+
+export default function TransactionTable({ onEdit }: TransactionTableProps) {
     const queryClient =
         useQueryClient();
 
@@ -101,8 +105,16 @@ export default function TransactionTable() {
                                 {tx.type}
                             </td>
 
-                            <td>
+                            <td className="flex gap-2">
                                 <button
+                                    type="button"
+                                    className="bg-blue-600 text-white px-4 py-2 rounded"
+                                    onClick={() => onEdit?.(tx)}
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    type="button"
                                     className="bg-red-500 text-white px-4 py-2 rounded"
                                     onClick={() =>
                                         mutation.mutate(

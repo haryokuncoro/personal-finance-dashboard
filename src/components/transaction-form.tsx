@@ -1,39 +1,97 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createTransaction } from "@/services/transaction.service";
-import { transactionSchema } from "@/types/transaction";
+import {
+    createTransaction,
+    updateTransaction,
+} from "@/services/transaction.service";
+import {
+    transactionSchema,
+    type TransactionRequest,
+    type TransactionResponse,
+} from "@/types/transaction";
 
 type FieldErrors = Partial<Record<string, string>>;
 
-export default function TransactionForm() {
+type TransactionFormProps = {
+    selectedTransaction?: TransactionResponse;
+    onClear?: () => void;
+};
+
+const defaultFormState = () => {
+    const today = new Date().toISOString().split("T")[0];
+
+    return {
+        id: "",
+        description: "",
+        category: "",
+        amount: "",
+        type: "EXPENSE" as const,
+        date: today,
+    };
+};
+
+export default function TransactionForm({
+    selectedTransaction,
+    onClear,
+}: TransactionFormProps) {
     const queryClient = useQueryClient();
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+    const [formState, setFormState] = useState(defaultFormState);
+
+    useEffect(() => {
+        if (selectedTransaction) {
+            setFormState({
+                id: selectedTransaction.id,
+                description: selectedTransaction.description,
+                category: selectedTransaction.category,
+                amount: selectedTransaction.amount.toString(),
+                type: selectedTransaction.type,
+                date: selectedTransaction.date.split("T")[0],
+            });
+            return;
+        }
+
+        setFieldErrors({});
+        setFormState(defaultFormState());
+    }, [selectedTransaction]);
+
+    const isEditing = Boolean(formState.id);
 
     const mutation = useMutation({
-        mutationFn: createTransaction,
+        mutationFn: async ({
+            payload,
+            id,
+        }: {
+            payload: TransactionRequest;
+            id?: string;
+        }) => {
+            if (id) {
+                return updateTransaction(id, payload);
+            }
+
+            return createTransaction(payload);
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
             queryClient.invalidateQueries({ queryKey: ["transactions"] });
+            setFormState(defaultFormState());
+            setFieldErrors({});
+            onClear?.();
         },
     });
 
-    async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    async function handleSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setFieldErrors({});
 
-        const form = e.currentTarget;
-        const formData = new FormData(form);
-        const today = new Date().toISOString().split("T")[0];
-
-        // Use safeParse instead of parse to avoid throwing
         const result = transactionSchema.safeParse({
-            description: formData.get("description"),
-            category: formData.get("category"),
-            amount: Number(formData.get("amount")),
-            type: formData.get("type"),
-            date: formData.get("date") || today,
+            description: formState.description,
+            category: formState.category,
+            amount: Number(formState.amount),
+            type: formState.type,
+            date: formState.date,
         });
 
         if (!result.success) {
@@ -47,8 +105,10 @@ export default function TransactionForm() {
         }
 
         try {
-            await mutation.mutateAsync(result.data);
-            form.reset();
+            await mutation.mutateAsync({
+                payload: result.data,
+                id: formState.id || undefined,
+            });
         } catch {
             // mutation-level error (network, server, etc.) is on mutation.error
         }
@@ -56,10 +116,36 @@ export default function TransactionForm() {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-2 border p-4 rounded">
+            <div className="flex items-center justify-between gap-4">
+                <h2 className="text-lg font-semibold">
+                    {isEditing ? "Edit Transaction" : "Add Transaction"}
+                </h2>
+                {isEditing && (
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setFormState(defaultFormState());
+                            setFieldErrors({});
+                            onClear?.();
+                        }}
+                        className="text-sm text-blue-600"
+                    >
+                        Cancel
+                    </button>
+                )}
+            </div>
+
             <div>
                 <input
                     name="description"
                     placeholder="Description"
+                    value={formState.description}
+                    onChange={(event) =>
+                        setFormState((prev) => ({
+                            ...prev,
+                            description: event.target.value,
+                        }))
+                    }
                     className="border p-2 w-full"
                 />
                 {fieldErrors.description && (
@@ -71,6 +157,13 @@ export default function TransactionForm() {
                 <input
                     name="category"
                     placeholder="Category"
+                    value={formState.category}
+                    onChange={(event) =>
+                        setFormState((prev) => ({
+                            ...prev,
+                            category: event.target.value,
+                        }))
+                    }
                     className="border p-2 w-full"
                 />
                 {fieldErrors.category && (
@@ -83,6 +176,13 @@ export default function TransactionForm() {
                     type="number"
                     name="amount"
                     placeholder="Amount"
+                    value={formState.amount}
+                    onChange={(event) =>
+                        setFormState((prev) => ({
+                            ...prev,
+                            amount: event.target.value,
+                        }))
+                    }
                     className="border p-2 w-full"
                 />
                 {fieldErrors.amount && (
@@ -91,7 +191,17 @@ export default function TransactionForm() {
             </div>
 
             <div>
-                <select name="type" className="border p-2 w-full">
+                <select
+                    name="type"
+                    value={formState.type}
+                    onChange={(event) =>
+                        setFormState((prev) => ({
+                            ...prev,
+                            type: event.target.value as "INCOME" | "EXPENSE",
+                        }))
+                    }
+                    className="border p-2 w-full"
+                >
                     <option value="EXPENSE">Expense</option>
                     <option value="INCOME">Income</option>
                 </select>
@@ -101,7 +211,18 @@ export default function TransactionForm() {
             </div>
 
             <div>
-                <input type="date" name="date" className="border p-2 w-full" />
+                <input
+                    type="date"
+                    name="date"
+                    value={formState.date}
+                    onChange={(event) =>
+                        setFormState((prev) => ({
+                            ...prev,
+                            date: event.target.value,
+                        }))
+                    }
+                    className="border p-2 w-full"
+                />
                 {fieldErrors.date && (
                     <p className="text-red-500 text-sm">{fieldErrors.date}</p>
                 )}
@@ -118,7 +239,13 @@ export default function TransactionForm() {
                 disabled={mutation.isPending}
                 className="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
             >
-                {mutation.isPending ? "Saving..." : "Add Transaction"}
+                {mutation.isPending
+                    ? isEditing
+                        ? "Updating..."
+                        : "Saving..."
+                    : isEditing
+                        ? "Update Transaction"
+                        : "Add Transaction"}
             </button>
         </form>
     );

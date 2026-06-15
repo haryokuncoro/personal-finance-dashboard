@@ -1,6 +1,14 @@
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+
 import Navbar from "@/components/navbar";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth();
+  
+    if (session) {
+      redirect("/dashboard");
+    }
   return (
     <>
       <Navbar />

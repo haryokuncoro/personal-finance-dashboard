@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
 import { DashboardContent } from "@/components/dashboard-content";
-import LogoutButton from "@/components/logout-button";
+import Navbar from "@/components/navbar";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -12,6 +12,8 @@ export default async function DashboardPage() {
   }
 
   return (
+    <>
+    <Navbar />
     <div className="max-w-5xl mx-auto p-10">
       <div className="flex justify-between items-center mb-8">
         <div>
@@ -24,10 +26,10 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        <LogoutButton />
       </div>
 
       <DashboardContent />
     </div>
+    </>
   );
 }

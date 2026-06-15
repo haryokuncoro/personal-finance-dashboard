@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
-import DashboardContent from "@/components/dashboard-content";
+import { DashboardContent } from "@/components/dashboard-content";
 import LogoutButton from "@/components/logout-button";
 
 export default async function DashboardPage() {

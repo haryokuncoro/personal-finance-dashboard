@@ -20,6 +20,9 @@ export default async function Navbar() {
             <Link href="/dashboard" className="rounded bg-black px-4 py-2 text-white">
               Transactions
             </Link>
+            <Link href="/dashboard/report" className="rounded bg-blue-500 px-4 py-2 text-white">
+              Report
+            </Link>
             <LogoutButton />
           </div>
         ) : (

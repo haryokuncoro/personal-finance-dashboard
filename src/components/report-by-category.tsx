@@ -8,7 +8,7 @@ type Props = {
 };
 
 function formatCurrency(n: number) {
-    return n.toLocaleString(undefined, { style: "currency", currency: "IDR" });
+    return `Rp ${n.toLocaleString()}`
 }
 
 export default function ReportByCategory({ transactions }: Props) {
@@ -41,15 +41,15 @@ export default function ReportByCategory({ transactions }: Props) {
                <div className="grid gap-4 md:grid-cols-3 mb-6">
                 <div className="p-3 border rounded">
                     <div className="text-xl text-gray-600">Income</div>
-                    <div className="text-xl font-medium">{formatCurrency(summary.income)}</div>
+                    <div className="mt-2 text-3xl font-bold">{formatCurrency(summary.income)}</div>
                 </div>
                 <div className="p-3 border rounded">
                     <div className="text-xl text-gray-600">Expense</div>
-                    <div className="text-xl font-medium">{formatCurrency(summary.expense)}</div>
+                    <div className="mt-2 text-3xl font-bold">{formatCurrency(summary.expense)}</div>
                 </div>
                 <div className="p-3 border rounded">
                     <div className="text-xl text-gray-600">Net</div>
-                    <div className="text-xl font-medium">{formatCurrency(summary.income - summary.expense)}</div>
+                    <div className="mt-2 text-3xl font-bold">{formatCurrency(summary.income - summary.expense)}</div>
                 </div>
             </div>
 

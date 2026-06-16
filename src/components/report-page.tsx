@@ -8,14 +8,13 @@ import ReportByCategory from "@/components/report-by-category"
 export default function TransactionsReportPage() {
      
     const [transactions, setTransactions] = useState<TransactionResponse[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const [year, setYear] = useState<number | "all">("all");
     const [month, setMonth] = useState<number | "all">("all");
 
     useEffect(() => {
-        setLoading(true);
         getTransactions()
             .then((data) => setTransactions(data))
             .catch((err) => setError(String(err)))

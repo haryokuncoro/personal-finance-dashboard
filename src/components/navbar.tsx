@@ -18,7 +18,7 @@ export default async function Navbar() {
               Users
             </Link>
             <Link href="/dashboard" className="rounded bg-black px-4 py-2 text-white">
-              transaction
+              Transactions
             </Link>
             <LogoutButton />
           </div>

@@ -7,7 +7,7 @@ import { loginSchema, LoginRequest } from "@/types/auth";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { NotificationState } from "@/types/notification.state";
-
+import Link from "next/link";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -50,11 +50,10 @@ export default function LoginPage() {
                 {/* Notification Banner */}
                 {notification && (
                     <div
-                        className={`flex items-start justify-between rounded-lg border px-4 py-3 text-sm ${
-                            notification.type === "success"
-                                ? "border-green-200 bg-green-50 text-green-800"
-                                : "border-red-200 bg-red-50 text-red-800"
-                        }`}
+                        className={`flex items-start justify-between rounded-lg border px-4 py-3 text-sm ${notification.type === "success"
+                            ? "border-green-200 bg-green-50 text-green-800"
+                            : "border-red-200 bg-red-50 text-red-800"
+                            }`}
                     >
                         <span>{notification.message}</span>
                         <button
@@ -86,9 +85,25 @@ export default function LoginPage() {
                     <p className="text-red-500">{errors.password.message}</p>
                 )}
 
-                <button className="w-full rounded bg-black p-2 text-white">
-                    Login
-                </button>
+                <div className="space-y-2">
+                    <button
+                        type="submit"
+                        className="w-full rounded bg-black p-2 text-white"
+                    >
+                        Login
+                    </button>
+                    <div className="flex items-center">
+                        <hr className="flex-1 border-gray-300" />
+                        <span className="px-3 text-sm text-gray-500">or</span>
+                        <hr className="flex-1 border-gray-300" />
+                    </div>
+                    <Link
+                        href="/register"
+                        className="block w-full rounded border p-2 text-center"
+                    >
+                        Register
+                    </Link>
+                </div>
             </form>
         </main>
     );

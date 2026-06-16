@@ -31,13 +31,6 @@ export default async function HomePage() {
             >
               Get Started
             </a>
-
-            <a
-              href="/login"
-              className="rounded border px-6 py-3"
-            >
-              Login
-            </a>
           </div>
         </div>
       </main>

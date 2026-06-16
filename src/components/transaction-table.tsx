@@ -96,9 +96,7 @@ export default function TransactionTable({ onEdit }: TransactionTableProps) {
                             </td>
 
                             <td>
-                                {
-                                    tx.amount
-                                }
+                                Rp {tx.amount.toLocaleString()}
                             </td>
 
                             <td>

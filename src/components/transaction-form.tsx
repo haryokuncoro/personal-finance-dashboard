@@ -40,6 +40,7 @@ export default function TransactionForm({
     const {
         register,
         handleSubmit,
+        watch,
         reset,
         formState: { errors },
     } = useForm<TransactionRequest>({
@@ -88,6 +89,31 @@ export default function TransactionForm({
         }
     };
 
+    const incomeCategories = [
+        "Salary",
+        "Freelance",
+        "Business",
+        "Investment",
+        "Bonus",
+        "Gift",
+        "Other",
+    ];
+
+    const expenseCategories = [
+        "Food",
+        "Transportation",
+        "Shopping",
+        "Bills",
+        "Entertainment",
+        "Health",
+        "Other",
+    ];
+
+    const categories =
+        watch("type") === "INCOME"
+            ? incomeCategories
+            : expenseCategories;
+
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-2 border p-4 rounded">
             <div className="flex items-center justify-between gap-4">
@@ -118,15 +144,34 @@ export default function TransactionForm({
                     <p className="text-red-500 text-sm">{errors.description.message}</p>
                 )}
             </div>
+            <div>
+                <select className="border p-2 w-full" {...register("type")}>
+                    <option value="EXPENSE">Expense</option>
+                    <option value="INCOME">Income</option>
+                </select>
+                {errors.type && (
+                    <p className="text-red-500 text-sm">{errors.type.message}</p>
+                )}
+            </div>
 
             <div>
-                <input
-                    placeholder="Category"
-                    className="border p-2 w-full"
+                <select
+                    className="border p-2 w-full rounded"
                     {...register("category")}
-                />
+                    defaultValue=""
+                >
+                    <option value="" disabled>Select Category</option>
+                    {categories.map((category) => (
+                        <option key={category} value={category}>
+                            {category}
+                        </option>
+                    ))}
+                </select>
+
                 {errors.category && (
-                    <p className="text-red-500 text-sm">{errors.category.message}</p>
+                    <p className="text-red-500 text-sm">
+                        {errors.category.message}
+                    </p>
                 )}
             </div>
 
@@ -139,16 +184,6 @@ export default function TransactionForm({
                 />
                 {errors.amount && (
                     <p className="text-red-500 text-sm">{errors.amount.message}</p>
-                )}
-            </div>
-
-            <div>
-                <select className="border p-2 w-full" {...register("type")}>
-                    <option value="EXPENSE">Expense</option>
-                    <option value="INCOME">Income</option>
-                </select>
-                {errors.type && (
-                    <p className="text-red-500 text-sm">{errors.type.message}</p>
                 )}
             </div>
 
